@@ -1,7 +1,17 @@
 #!/bin/bash
 
+DATA="/data"
+MP="/mnt"
+
+cleanup(){
+	umount -d ${MP}/boot
+	umount -d ${MP}/
+	losetup -D # not needed, but docker, you know...
+}
+
 abort(){
 	echo "-err: $1" >&2
+	cleanup
 	exit 1
 }
 
@@ -14,23 +24,23 @@ abort(){
 update-binfmts --enable qemu-arm > /dev/null 2>&1 || true
 update-binfmts --display qemu-arm | grep -q enable || abort "ARM executable binary format not registered"
 
-if [[ ! -e /data/root.img ]]; then
-	dd if=/dev/zero of=/data/root.img bs=1M count=2048 status=progress
-	mkfs.ext4 /data/root.img
+if [[ ! -e ${DATA}/root.img ]]; then
+	dd if=/dev/zero of=${DATA}/root.img bs=1M count=2048 status=progress
+	mkfs.ext4 ${DATA}/root.img
 fi
 
-if [[ ! -e /data/boot.img ]]; then
-	dd if=/dev/zero of=/data/boot.img bs=1M count=300 status=progress
-	mkfs.ext4 /data/boot.img
+if [[ ! -e ${DATA}/boot.img ]]; then
+	dd if=/dev/zero of=${DATA}/boot.img bs=1M count=300 status=progress
+	mkfs.ext4 ${DATA}/boot.img
 fi
 
 [[ -e /dev/loop0 ]] || mknod /dev/loop0 b 7 0
 [[ -e /dev/loop1 ]] || mknod /dev/loop1 b 7 1
 
-mount /data/root.img /mnt/
-mkdir -p /mnt/boot
-mount /data/boot.img /mnt/boot
+grep -q "${MP} " /proc/mounts || mount ${DATA}/root.img ${MP}/
+mkdir -p ${MP}/boot
+grep -q "${MP}/boot " /proc/mounts || mount ${DATA}/boot.img ${MP}/boot
 
-losetup -D
-umount /mnt/boot
-umount /mnt/
+test "boot" =  "$(ls ${MP} | grep -v 'lost+found')"  || abort "Filesystem already contains data"
+
+cleanup
