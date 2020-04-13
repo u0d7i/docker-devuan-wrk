@@ -1,13 +1,18 @@
 #!/bin/bash
 
+abort(){
+	echo "-err: $1" >&2
+	exit 1
+}
+
 # guess if we are in privileged mode
-if [[ ! -e /dev/mem ]]; then
-	echo "-err: container not run im priveleged mode"
-	exit
-fi
+[[ -e /dev/mem ]] ||  abort  "container not run in priveleged mode"
 # if you want to be sure, do something for real, like
 # ip link add dummy0 type dummy
 # but it's an overkill
+
+update-binfmts --enable qemu-arm > /dev/null 2>&1 || true
+update-binfmts --display qemu-arm | grep -q enable || abort "ARM executable binary format not registered"
 
 if [[ ! -e /data/root.img ]]; then
 	dd if=/dev/zero of=/data/root.img bs=1M count=2048 status=progress
