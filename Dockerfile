@@ -1,8 +1,8 @@
 FROM dyne/devuan:beowulf
 
-RUN sh -c 'echo "deb http://deb.devuan.org/merged beowulf main contrib non-free" > /etc/apt/sources.list'
-RUN apt-get update && apt-get -y upgrade
-RUN apt-get update && apt-get -y install \
+RUN sh -c 'echo "deb http://deb.devuan.org/merged beowulf main contrib non-free" > /etc/apt/sources.list' && \
+    apt-get update && apt-get -y upgrade && \
+    apt-get -y install \
 	bc \
 	binfmt-support \
 	build-essential \
@@ -14,13 +14,13 @@ RUN apt-get update && apt-get -y install \
 	qemu-user \
 	qemu-user-static \
 	tzdata \
-	whiptail
-RUN apt-get clean
+	whiptail \
+	&& \
+   apt-get clean
 
 RUN ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime && \
-	dpkg-reconfigure --frontend noninteractive tzdata
-
-RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+	dpkg-reconfigure --frontend noninteractive tzdata && \
+    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 	touch /usr/share/locale/locale.alias && \
 	dpkg-reconfigure --frontend=noninteractive locales && \
 	update-locale LANG=en_US.UTF-8
