@@ -11,12 +11,13 @@ cleanup(){
 
 abort(){
 	echo "-err: $1" >&2
-	cleanup
 	exit 1
 }
 
+[[ $(id -u) -eq 0 ]] || abort "must be root"
+[[ -e /.dockerenv  ]] ||  abort  "must be run in docker"
 # guess if we are in privileged mode
-[[ -e /dev/mem ]] ||  abort  "container not run in priveleged mode"
+[[ -e /dev/mem ]] ||  abort  "docker container must be run in priveleged mode"
 # if you want to be sure, do something for real, like
 # ip link add dummy0 type dummy
 # but it's an overkill
@@ -41,6 +42,6 @@ grep -q "${MP} " /proc/mounts || mount ${DATA}/root.img ${MP}/
 mkdir -p ${MP}/boot
 grep -q "${MP}/boot " /proc/mounts || mount ${DATA}/boot.img ${MP}/boot
 
-test "boot" =  "$(ls ${MP} | grep -v 'lost+found')"  || abort "Filesystem already contains data"
+[[ "$(ls ${MP} | grep -v 'lost+found')" = "boot" ]] || abort "filesystem already contains data"
 
 cleanup
