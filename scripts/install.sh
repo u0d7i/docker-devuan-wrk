@@ -1,7 +1,15 @@
 #!/bin/bash
 
+DEBUG=
 DATA="/data"
 MP="/mnt"
+
+MIRROR=http://deb.devuan.org/merged
+DEBARCH=armhf
+RELEASE=beowulf
+ESSENTIAL=acpid,acpi-support-base,console-common,console-setup,cryptsetup,initramfs-tools,iputils-ping,keyboard-configuration,kmod,locales,netbase,net-tools,patch,u-boot-tools,udev,vim,wget
+DISPLAYSRV=xorg,xserver-xorg-video-fbdev,xserver-xorg-video-omap,xinput-calibrator
+EXTRA=apt-utils,bluez,ifupdown,iw,man-db,mtd-utils,pm-utils,rsyslog,ssh,whiptail,wireless-tools,wpasupplicant,${DISPLAYSRV}
 
 cleanup(){
 	umount -d ${MP}/boot
@@ -43,5 +51,8 @@ mkdir -p ${MP}/boot
 grep -q "${MP}/boot " /proc/mounts || mount ${DATA}/boot.img ${MP}/boot
 
 [[ "$(ls ${MP} | grep -v 'lost+found')" = "boot" ]] || abort "filesystem already contains data"
+
+
+qemu-debootstrap ${DEBUG:+--verbose} --arch=${DEBARCH} --variant=minbase --include=${ESSENTIAL}${EXTRA:+,$EXTRA} ${RELEASE} ${MP} ${MIRROR}
 
 cleanup

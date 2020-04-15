@@ -7,6 +7,7 @@ RUN sh -c 'echo "deb http://deb.devuan.org/merged beowulf main contrib non-free"
 	binfmt-support \
 	build-essential \
 	cryptsetup \
+	debootstrap \
 	fakeroot \
 	file \
 	gcc-arm-none-eabi \
