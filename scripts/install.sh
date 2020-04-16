@@ -9,7 +9,7 @@ DEBARCH=armhf
 RELEASE=beowulf
 ESSENTIAL=acpid,acpi-support-base,console-common,console-setup,cryptsetup,initramfs-tools,iputils-ping,keyboard-configuration,kmod,locales,netbase,net-tools,patch,u-boot-tools,udev,vim,wget
 DISPLAYSRV=xorg,xserver-xorg-video-fbdev,xserver-xorg-video-omap,xinput-calibrator
-EXTRA=apt-utils,bluez,ifupdown,iw,man-db,mtd-utils,pm-utils,rsyslog,ssh,whiptail,wireless-tools,wpasupplicant,${DISPLAYSRV}
+EXTRA=apt-utils,bluez,ifupdown,isc-dhcp-client,iw,man-db,mtd-utils,pm-utils,rfkill,rsyslog,ssh,whiptail,wireless-tools,wpasupplicant,${DISPLAYSRV}
 
 cleanup(){
 	umount -d ${MP}/boot
