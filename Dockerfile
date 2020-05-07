@@ -6,6 +6,8 @@ RUN sh -c 'echo "deb http://deb.devuan.org/merged beowulf main contrib non-free"
     apt-get clean
 
 FROM scratch as builder
+LABEL stage=builder
+# ceanup with: docker image prune --filter label=stage=builder
 
 RUN apt-get -y install \
         bc \
