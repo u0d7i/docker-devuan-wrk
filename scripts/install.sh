@@ -12,9 +12,10 @@ DISPLAYSRV=xorg,xserver-xorg-video-fbdev,xserver-xorg-video-omap,xinput-calibrat
 EXTRA=apt-utils,bluez,ifupdown,isc-dhcp-client,iw,man-db,mtd-utils,pm-utils,rfkill,rsyslog,ssh,whiptail,wireless-tools,wpasupplicant,${DISPLAYSRV}
 
 cleanup(){
-	umount -d ${MP}/boot
-	umount -d ${MP}/
+	[[ -d ${MP}/boot ]] && umount -d -q ${MP}/boot
+	[[ -d ${MP} ]] && umount -d -q ${MP}
 	losetup -D # not needed, but docker, you know...
+    exit
 }
 
 abort(){
@@ -29,6 +30,9 @@ abort(){
 # if you want to be sure, do something for real, like
 # ip link add dummy0 type dummy
 # but it's an overkill
+
+# dirty, add getopt(s) if more options
+[[ "$1" = "-c" ]] && cleanup
 
 update-binfmts --enable qemu-arm > /dev/null 2>&1 || true
 update-binfmts --display qemu-arm | grep -q enable || abort "ARM executable binary format not registered"
