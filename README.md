@@ -32,4 +32,11 @@ Device     Boot  Start      End  Sectors  Size Id Type
 /dev/sdb1         2048   616447   614400  300M 83 Linux
 /dev/sdb2       616448 15523839 14907392  7.1G 83 Linux
 ```
+Format LUKS crypto-container on the second patrition and open it:
+```
+~# cryptsetup luksFormat /dev/sdb2
 
+~# cryptsetup luksOpen /dev/sdb2 crypt_sd
+```
+
+dd images to respected partitions and expand filesystems:
