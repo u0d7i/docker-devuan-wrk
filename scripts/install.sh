@@ -70,18 +70,18 @@ grep -q "${MP}/boot " /proc/mounts || mount ${DATA}/boot.img ${MP}/boot
 # base install
 qemu-debootstrap ${DEBUG:+--verbose} --arch=${DEBARCH} --variant=minbase --include=${ESSENTIAL}${EXTRA:+,$EXTRA} ${RELEASE} ${MP} ${MIRROR}
 
-# fix apt sources
+# apt sources
 cat << EOF > $MP/etc/etc/apt/sources.list
 deb ${MIRROR} ${RELEASE} main contrib non-free
 deb ${MIRROR} ${RELEASE}-security main contrib non-free
 deb ${MIRROR} ${RELEASE}-updates main contrib non-free
 EOF
 
-# fix hostname
+# hostname
 echo ${HOST_NAME} > ${MP}/etc/hostname
 sed -i 's/127\.0\.0\.1.*$/& '$HOST_NAME'/' ${MP}/etc/hosts
 
-# create fstab
+# fstab
 cat << EOF > ${MP}/etc/fstab
 # /etc/fstab: static file system information.
 #
@@ -93,8 +93,63 @@ proc /proc proc nodev,noexec,nosuid 0 0
 none /tmp tmpfs noatime 0 0
 EOF
 
-# create crypttab
+# crypttab
 cat << EOF > ${MP}/etc/crypttab
 # <target name> <source device> <key file> <options>
 $CRMAP $CRDEV none luks
 EOF
+
+# initramfs modules
+cat << EOF > ${MP}/etc/initramfs-tools/modules
+# List of modules that you want to include in your initramfs.
+# They will be loaded at boot time in the order below.
+#
+# Syntax:  module_name [args ...]
+#
+# You must run update-initramfs(8) to effect this change.
+#
+omaplfb
+sd_mod
+omap_hsmmc
+mmc_block
+omap_wdt
+twl4030_wdt
+leds_lp5523
+EOF
+
+# update-initramfs hook to update u-boot images
+mkdir -p ${MP}/etc/initramfs/post-update.d
+cat << EOF > ${MP}/etc/initramfs/post-update.d/update-u-boot
+#!/bin/sh
+#
+# update-u-boot update-initramfs hook to update u-boot images
+# Distributable under the terms of the GNU GPL version 3.
+KERNELRELEASE=\$1
+INITRAMFS=\$2
+# Create uInitrd under /boot
+mkimage -A arm -O linux -T ramdisk -C none -a 0 -e 0 -n initramfs -d \$INITRAMFS /boot/uInitrd-\$KERNELRELEASE
+EOF
+chmod +x ${MP}/etc/initramfs/post-update.d/update-u-boot
+
+# initramfs script to turn on keyboard leds
+mkdir -p ${MP}/etc/initramfs-tools/scripts/local-top/
+cat << EOF > ${MP}/etc/initramfs-tools/scripts/local-top/kbdled
+#!/bin/sh
+PREREQ=""
+prereqs()
+{
+        echo "\$PREREQ"
+}
+case \$1 in
+prereqs)
+        prereqs
+        exit 0
+        ;;
+esac
+for n in 1 2 3 4 5 6
+do
+        echo 50 > /sys/class/leds/lp5523\:kb\${n}/brightness
+done
+exit 0
+EOF
+chmod +x ${MP}/etc/initramfs-tools/scripts/local-top/kbdled
