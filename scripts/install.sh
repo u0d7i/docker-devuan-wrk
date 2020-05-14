@@ -74,7 +74,7 @@ qemu-debootstrap ${DEBUG:+--verbose} --arch=${DEBARCH} --variant=minbase --inclu
 cp /data/kernel/*.deb ${MP}/var/tmp/
 
 # apt sources
-cat << EOF > $MP/etc/etc/apt/sources.list
+cat << EOF > $MP/etc/apt/sources.list
 deb ${MIRROR} ${RELEASE} main contrib non-free
 deb ${MIRROR} ${RELEASE}-security main contrib non-free
 deb ${MIRROR} ${RELEASE}-updates main contrib non-free
