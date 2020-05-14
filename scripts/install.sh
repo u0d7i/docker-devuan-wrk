@@ -11,6 +11,9 @@ ESSENTIAL=acpid,acpi-support-base,console-common,console-setup,cryptsetup,initra
 DISPLAYSRV=xorg,xserver-xorg-video-fbdev,xserver-xorg-video-omap,xinput-calibrator
 EXTRA=apt-utils,bluez,ifupdown,isc-dhcp-client,iw,man-db,mtd-utils,pm-utils,rfkill,rsyslog,ssh,whiptail,wireless-tools,wpasupplicant,${DISPLAYSRV}
 
+BOOTDEV=/dev/mmcblk0p1
+ROOTDEV=/dev/mapper/crypt_sd
+
 cleanup(){
 	[[ -d ${MP}/boot ]] && umount -d -q ${MP}/boot
 	[[ -d ${MP} ]] && umount -d -q ${MP}
