@@ -15,13 +15,16 @@ cleanup(){
 	[[ -d ${MP}/boot ]] && umount -d -q ${MP}/boot
 	[[ -d ${MP} ]] && umount -d -q ${MP}
 	losetup -D # not needed, but docker, you know...
-    exit
+	exit
 }
 
 abort(){
 	echo "-err: $1" >&2
 	exit 1
 }
+
+# cleanup on trap
+trap cleanup 0 1 2 15
 
 [[ $(id -u) -eq 0 ]] || abort "must be root"
 [[ -e /.dockerenv  ]] ||  abort  "must be run in docker"
@@ -59,4 +62,3 @@ grep -q "${MP}/boot " /proc/mounts || mount ${DATA}/boot.img ${MP}/boot
 
 qemu-debootstrap ${DEBUG:+--verbose} --arch=${DEBARCH} --variant=minbase --include=${ESSENTIAL}${EXTRA:+,$EXTRA} ${RELEASE} ${MP} ${MIRROR}
 
-cleanup
