@@ -160,5 +160,5 @@ exit 0
 EOF
 chmod +x ${MP}/etc/initramfs-tools/scripts/local-top/kbdled
 
-# unset trap on exit
-trap - 0
+# unset trap on exit to avid cleanup
+# trap - 0
