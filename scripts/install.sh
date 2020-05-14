@@ -12,7 +12,12 @@ DISPLAYSRV=xorg,xserver-xorg-video-fbdev,xserver-xorg-video-omap,xinput-calibrat
 EXTRA=apt-utils,bluez,ifupdown,isc-dhcp-client,iw,man-db,mtd-utils,pm-utils,rfkill,rsyslog,ssh,whiptail,wireless-tools,wpasupplicant,${DISPLAYSRV}
 
 BOOTDEV=/dev/mmcblk0p1
-ROOTDEV=/dev/mapper/crypt_sd
+CRDEV=/dev/mmcblk0p2
+CRMAP=crypt_sd
+ROOTDEV=/dev/mapper/${CRMAP}
+SWDEV=/dev/mmcblk1p3 # FIXME: change to /dev/zram0 after initscript is in place
+
+HOST_NAME=n900
 
 cleanup(){
 	[[ -d ${MP}/boot ]] && umount -d -q ${MP}/boot
@@ -62,6 +67,34 @@ grep -q "${MP}/boot " /proc/mounts || mount ${DATA}/boot.img ${MP}/boot
 
 [[ "$(ls ${MP} | grep -v 'lost+found')" = "boot" ]] || abort "filesystem already contains data"
 
-
+# base install
 qemu-debootstrap ${DEBUG:+--verbose} --arch=${DEBARCH} --variant=minbase --include=${ESSENTIAL}${EXTRA:+,$EXTRA} ${RELEASE} ${MP} ${MIRROR}
 
+# fix apt sources
+cat << EOF > $MP/etc/etc/apt/sources.list
+deb ${MIRROR} ${RELEASE} main contrib non-free
+deb ${MIRROR} ${RELEASE}-security main contrib non-free
+deb ${MIRROR} ${RELEASE}-updates main contrib non-free
+EOF
+
+# fix hostname
+echo ${HOST_NAME} > ${MP}/etc/hostname
+sed -i 's/127\.0\.0\.1.*$/& '$HOST_NAME'/' ${MP}/etc/hosts
+
+# create fstab
+cat << EOF > ${MP}/etc/fstab
+# /etc/fstab: static file system information.
+#
+# <file system> <mount point> <type> <options> <dump> <pass>
+$ROOTDEV / ext4 errors=remount-ro,noatime 0 1
+$BOOTDEV /boot ext4 noatime 0 0
+$SWDEV none swap sw 0 0
+proc /proc proc nodev,noexec,nosuid 0 0
+none /tmp tmpfs noatime 0 0
+EOF
+
+# create crypttab
+cat << EOF > ${MP}/etc/crypttab
+# <target name> <source device> <key file> <options>
+$CRMAP $CRDEV none luks
+EOF
