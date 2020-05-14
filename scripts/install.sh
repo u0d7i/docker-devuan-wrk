@@ -43,7 +43,7 @@ if [[ ! -e ${DATA}/root.img ]]; then
 fi
 
 if [[ ! -e ${DATA}/boot.img ]]; then
-	dd if=/dev/zero of=${DATA}/boot.img bs=1M count=300 status=progress
+	dd if=/dev/zero of=${DATA}/boot.img bs=1M count=200 status=progress
 	mkfs.ext4 ${DATA}/boot.img
 fi
 
