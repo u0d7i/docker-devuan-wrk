@@ -70,6 +70,9 @@ grep -q "${MP}/boot " /proc/mounts || mount ${DATA}/boot.img ${MP}/boot
 # base install
 qemu-debootstrap ${DEBUG:+--verbose} --arch=${DEBARCH} --variant=minbase --include=${ESSENTIAL}${EXTRA:+,$EXTRA} ${RELEASE} ${MP} ${MIRROR}
 
+# copy kernel debs 
+cp /data/kernel/*.deb ${MP}/var/tmp/
+
 # apt sources
 cat << EOF > $MP/etc/etc/apt/sources.list
 deb ${MIRROR} ${RELEASE} main contrib non-free
@@ -98,6 +101,9 @@ cat << EOF > ${MP}/etc/crypttab
 # <target name> <source device> <key file> <options>
 $CRMAP $CRDEV none luks
 EOF
+
+# enable initramfs cryptsetup unconditionally
+echo "CRYPTSETUP=y" >> ${MP}/etc/cryptsetup-initramfs/conf-hook
 
 # initramfs modules
 cat << EOF > ${MP}/etc/initramfs-tools/modules
