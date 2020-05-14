@@ -20,8 +20,10 @@ SWDEV=/dev/mmcblk1p3 # FIXME: change to /dev/zram0 after initscript is in place
 HOST_NAME=n900
 
 cleanup(){
-	[[ -d ${MP}/boot ]] && umount -d -q ${MP}/boot
-	[[ -d ${MP} ]] && umount -d -q ${MP}
+	trap - 0 1 2 15
+	for path in ${MP}/dev/pts ${MP}/dev ${MP}/proc ${MP}/boot ${MP}; do
+		grep -q $path /proc/mounts && umount -d -q $path
+	done
 	losetup -D # not needed, but docker, you know...
 	exit
 }
@@ -159,6 +161,32 @@ done
 exit 0
 EOF
 chmod +x ${MP}/etc/initramfs-tools/scripts/local-top/kbdled
+
+# script to be run inside chroot
+cat << EOF > ${MP}/var/tmp/finalstage.sh
+#!/bin/sh
+#
+# finalstage.sh - script to be run inside chroot
+# Distributable under the terms of the GNU GPL version 3
+
+set -e
+set -u
+${DEBUG:+set -x}
+
+# Install kernel
+dpkg -i --force-architecture /var/tmp/*.deb
+EOF
+chmod +x ${MP}/var/tmp/finalstage.sh
+
+# run finalstage.sh under chroot
+mount -t proc proc ${MP}/proc
+mount -o bind /dev ${MP}/dev
+mount -o bind /dev/pts ${MP}/dev/pts
+ln -s /proc/mounts ${MP}/etc/mtab
+LC_ALL=C chroot ${MP} /var/tmp/finalstage.sh
+
+umount ${MP}/dev/pts ${MP}/dev ${MP}/proc
+
 
 # unset trap on exit to avid cleanup
 # trap - 0
