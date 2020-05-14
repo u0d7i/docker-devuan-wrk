@@ -57,3 +57,8 @@ dd images to respected partitions and expand filesystems:
 
 # e2fsck -f /dev/sdb1
 ```
+
+cleanup:
+```
+# cryptsetup luksClose crypt_sd
+```
