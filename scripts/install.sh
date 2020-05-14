@@ -16,6 +16,7 @@ CRDEV=/dev/mmcblk0p2
 CRMAP=crypt_sd
 ROOTDEV=/dev/mapper/${CRMAP}
 SWDEV=/dev/mmcblk1p3 # FIXME: change to /dev/zram0 after initscript is in place
+CMDLINE="rootwait ro console=tty0 vram=12M ubi.mtd=5"
 
 HOST_NAME=n900
 
@@ -162,6 +163,19 @@ exit 0
 EOF
 chmod +x ${MP}/etc/initramfs-tools/scripts/local-top/kbdled
 
+# u-boot.cmd
+cat << EOF > ${MP}/boot/u-boot.cmd
+setenv mmcnum 0
+setenv mmcpart 1
+setenv mmctype ext4
+setenv bootargs root=${ROOTDEV} ${CMDLINE}
+setenv setup_omap_atag
+setenv mmckernfile /uImage
+setenv mmcinitrdfile /uInitrd
+setenv mmcscriptfile
+run trymmckerninitrdboot
+EOF
+
 # script to be run inside chroot
 cat << EOF > ${MP}/var/tmp/finalstage.sh
 #!/bin/sh
@@ -173,8 +187,14 @@ set -e
 set -u
 ${DEBUG:+set -x}
 
-# Install kernel
+# install kernel
 dpkg -i --force-architecture /var/tmp/*.deb
+
+ln -sf $(basename $(ls -1 /boot/uImage-* | tail -1)) /boot/uImage
+ln -sf $(basename $(ls -1 /boot/uInitrd-* | tail -1)) /boot/uInitrd
+
+# boot.scr
+mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n debian900 -d /boot/u-boot.cmd /boot/boot.scr
 EOF
 chmod +x ${MP}/var/tmp/finalstage.sh
 
@@ -186,7 +206,6 @@ ln -s /proc/mounts ${MP}/etc/mtab
 LC_ALL=C chroot ${MP} /var/tmp/finalstage.sh
 
 umount ${MP}/dev/pts ${MP}/dev ${MP}/proc
-
 
 # unset trap on exit to avid cleanup
 # trap - 0
