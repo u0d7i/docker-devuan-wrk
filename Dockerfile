@@ -29,6 +29,7 @@ RUN apt-get -y install \
         cryptsetup \
         debootstrap \
         file \
+	less \
         locales \
         qemu-user \
         qemu-user-static \
