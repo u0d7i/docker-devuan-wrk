@@ -32,33 +32,8 @@ Device     Boot  Start      End  Sectors  Size Id Type
 /dev/sdb1         2048   616447   614400  300M 83 Linux
 /dev/sdb2       616448 15523839 14907392  7.1G 83 Linux
 ```
-Format LUKS crypto-container on the second patrition and open it:
+
+finalise sd card:
 ```
-# cryptsetup luksFormat /dev/sdb2
-
-# cryptsetup luksOpen /dev/sdb2 crypt_sd
-```
-
-dd images to respected partitions and expand filesystems:
-```
-# dd if=/data/root.img of=/dev/mapper/crypt_sd status=progress
-
-# e2fsck -f /dev/mapper/crypt_sd
-
-# resize2fs -p /dev/mapper/crypt_sd
-
-# e2fsck -f /dev/mapper/crypt_sd
-
-# dd if=/data/boot.img of=/dev/sdb1 status=progress
-
-# e2fsck -f /dev/sdb1
-
-# resize2fs -p /dev/sdb1
-
-# e2fsck -f /dev/sdb1
-```
-
-cleanup:
-```
-# cryptsetup luksClose crypt_sd
+# /data/mksd.sh /dev/sdb
 ```
