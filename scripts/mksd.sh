@@ -53,7 +53,7 @@ resize2fs -p /dev/mapper/${CRMAP}
 e2fsck -f /dev/mapper/${CRMAP}
 cryptsetup luksClose ${CRMAP}
 
-dd if=/dev/urandom of=${D}1 bs=100M status=progress
+dd if=/dev/urandom of=${D}1 bs=10M status=progress
 dd if=/data/boot.img of=${D}1 status=progress
 e2fsck -f ${D}1
 resize2fs -p ${D}1
