@@ -1,5 +1,8 @@
 # docker-devuan-wrk
 
+Initial approach of making separate filesystem images and then dd'ing to sd card did not work quite well with crypsetup initrd hooks + docker.
+We should reconsider all the process.
+
 ```
 $ docker run -it --rm --privileged  devuan-wrk
 ```
